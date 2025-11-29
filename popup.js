@@ -1,17 +1,16 @@
-// popup.js
-const API_BASE = "https://kiron-extension-auth.vercel.app/pages/api/auth/verify"; // set your deployed domain
+// popup.js (snippet)
+const API_BASE = "https://<YOUR_VERCEL_DOMAIN>.vercel.app/api/auth/verify";
 
 const emailInput = document.getElementById("email");
 const verifyBtn = document.getElementById("verify");
 const injectBtn = document.getElementById("inject");
 const status = document.getElementById("status");
-document.getElementById("serverUrl").textContent = API_BASE.replace('/pages/api/auth/verify','');
+document.getElementById("serverUrl").textContent = API_BASE.replace('/api/auth/verify','');
 
 function setStatus(txt, ok) {
   status.textContent = txt;
   status.className = ok === true ? "ok" : ok === false ? "err" : "";
 }
-
 function generateDeviceId() {
   const parts = [
     navigator.userAgent,
@@ -22,7 +21,6 @@ function generateDeviceId() {
   ];
   return btoa(parts.join("|"));
 }
-
 const DEVICE_ID = generateDeviceId();
 
 verifyBtn.addEventListener("click", async () => {
@@ -43,18 +41,5 @@ verifyBtn.addEventListener("click", async () => {
   } catch (e) {
     console.error(e);
     setStatus("Server/network error", false);
-  }
-});
-
-injectBtn.addEventListener("click", async () => {
-  const s = await chrome.storage.local.get(["authorizedEmail"]);
-  if (!s.authorizedEmail) { setStatus("Not authorized. Verify first.", false); return; }
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  try {
-    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content_script.js"] });
-    setStatus("Script injected ✅", true);
-  } catch (err) {
-    console.error(err);
-    setStatus("Injection failed", false);
   }
 });
